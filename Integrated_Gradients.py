@@ -5,6 +5,7 @@ import torch
 from model import LSTM_MODEL
 from captum.attr import IntegratedGradients
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 
 import prepare_data
 
@@ -17,7 +18,7 @@ def Integrated_Gradients_FI():
     y = targets_data[time_steps:]
 
     # Split into train and test sets
-    from sklearn.model_selection import train_test_split
+
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     # Convert data to PyTorch tensors
