@@ -10,7 +10,7 @@ def laod_df_from_csv(output_path):
 
 # Streamlit sidebar navigation
 st.sidebar.title("Feature Importance Techniques")
-options = ["Permutation Importance", "Integrated Gradients", "WINit", "LIME"]
+options = ["Integrated Gradients", "WINit", "LIME", "Permutation Importance"]
 choice = st.sidebar.radio("Select an option", options)
 
 # Main application
