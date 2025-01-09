@@ -51,7 +51,7 @@ def Permutation_Importance_FI():
     for i in range(input_size):
         baseline_loss = criterion(model(X_test), y_test).item()
         perm_loss = permutation_importance_lstm(model, X_test, y_test, criterion, i)
-        importances.append(baseline_loss - perm_loss)
+        importances.append(perm_loss - baseline_loss)
 
     # Combine feature names with importance values
     feature_importance_df = pd.DataFrame({
