@@ -1,0 +1,42 @@
+from prepare_data import prepare_data_with_correlation, prepare_data_with_correlation_without_redundancy,prepare_data_with_correlation_PI,prepare_data_with_correlation_without_redundancy_PI, prepare_data_without_correlation_winit_vae,prepare_data_without_correlation
+from final_IG_NEW_lstm import process_dataset_with_integrated_gradients
+from final_lime_agg_lstm import process_dataset_with_lime_agg_lstm
+from final_lime_agg_rf import process_dataset_with_lime_agg_rf
+from final_lime_agg_xgb import process_dataset_with_lime_agg_xgb
+from final_PI_DT import process_dataset_with_PI_DT
+from final_PI_RF import process_dataset_with_PI_RF
+from final_WinIT_lstm import process_dataset_with_winit
+from final_WinIT_lstm_vae_wcorr import process_dataset_with_winit_lstm_vae_without_corr
+from final_WinIT_lstm_vae_with_corr import process_dataset_with_winit_lstm_vae_with_corr
+from final_WinIT_GRU_with_corr import process_dataset_with_winit_gru_with_corr
+from final_WinIT_XGB_with_corr import process_dataset_with_winit_xgb_with_corr
+from final_IG_FNN_with_corr import process_dataset_with_IG_FNN_with_corr
+from final_IG_lstm_without_corr import process_dataset_with_IG_lstm_without_corr
+
+dataset_paths = [
+    "static/Dataset/DMC2_AL_CP1.csv",
+    "static/Dataset/DMC2_AL_CP2.csv",
+    "static/Dataset/DMC2_S_CP1.csv",
+    "static/Dataset/DMC2_S_CP2.csv",
+]
+
+# Loop over datasets and process each one
+for dataset_path in dataset_paths:
+    #process_dataset_with_integrated_gradients(dataset_path, prepare_data_with_correlation_without_redundancy)
+    #process_dataset_with_IG_FNN_with_corr(dataset_path, prepare_data_with_correlation)
+    #process_dataset_with_IG_FNN_with_corr(dataset_path, prepare_data_with_correlation_without_redundancy)
+    process_dataset_with_IG_lstm_without_corr(dataset_path, prepare_data_without_correlation)
+    #process_dataset_with_lime_agg_lstm(dataset_path, prepare_data_with_correlation_without_redundancy)
+    #process_dataset_with_lime_agg_rf(dataset_path, prepare_data_with_correlation_without_redundancy)
+    #process_dataset_with_lime_agg_xgb(dataset_path, prepare_data_with_correlation_without_redundancy)
+    #process_dataset_with_PI_DT(dataset_path, prepare_data_with_correlation_without_redundancy_PI)
+    #process_dataset_with_PI_RF(dataset_path, prepare_data_with_correlation_without_redundancy_PI)
+    #process_dataset_with_winit(dataset_path, prepare_data_with_correlation_without_redundancy)
+    #process_dataset_with_winit_lstm_vae_without_corr(dataset_path,prepare_data_without_correlation_winit_vae)
+    #process_dataset_with_winit_lstm_vae_with_corr(dataset_path,prepare_data_with_correlation)
+    #process_dataset_with_winit_lstm_vae_with_corr(dataset_path,prepare_data_with_correlation_without_redundancy)
+    #process_dataset_with_winit_gru_with_corr(dataset_path,prepare_data_with_correlation)
+    #process_dataset_with_winit_gru_with_corr(dataset_path,prepare_data_with_correlation_without_redundancy)
+    #process_dataset_with_winit_xgb_with_corr(dataset_path,prepare_data_with_correlation)
+    #process_dataset_with_winit_xgb_with_corr(dataset_path,prepare_data_with_correlation_without_redundancy)
+
