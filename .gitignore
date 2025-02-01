@@ -1,2 +1,7 @@
+# Ignore compiled Python files
+*.pyc
+__pycache__/
+
+# Ignore specific dataset files
 static/Dataset/DMC2_AL_CP1.csv
 static/Dataset/DMC2_S_CP1.csv
