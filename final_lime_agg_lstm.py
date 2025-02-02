@@ -32,6 +32,12 @@ def process_dataset_with_lime_agg_lstm(path, prepare_data_func):
         loss.backward()
         optimizer.step()
         print(f"Epoch [{epoch+1}/50], Loss: {loss.item():.4f}")
+    
+    # Compute Test Loss
+    model.eval()
+    with torch.no_grad():
+        test_outputs = model(torch.tensor(X_test, dtype=torch.float32).unsqueeze(1))
+        test_loss_value = criterion(test_outputs, torch.tensor(y_test, dtype=torch.float32)).item()
 
     explainer = LimeTabularExplainer(X_train, feature_names=feature_names, mode='regression')
 
@@ -74,6 +80,6 @@ def process_dataset_with_lime_agg_lstm(path, prepare_data_func):
     print(f"Processed and saved results for {dataset_name}")
 
     return {
-        "test_loss": criterion(model(X_test), y_test).item(), 
+        "test_loss": test_loss_value, 
         "top_features": top_features  
     }
