@@ -3,9 +3,8 @@ import pandas as pd
 from prepare_data import prepare_data_with_correlation, prepare_data_with_correlation_without_redundancy,prepare_data_with_correlation_PI,prepare_data_with_correlation_without_redundancy_PI, prepare_data_without_correlation_x_y_scaled,prepare_data_without_correlation
 from final_IG_NEW_lstm import process_dataset_with_integrated_gradients
 from final_IG_FNN_with_corr import process_dataset_with_IG_FNN_with_corr
+from final_IG_FNN_without_corr import process_dataset_with_IG_FNN_without_corr
 from final_IG_lstm_without_corr import process_dataset_with_IG_lstm_without_corr
-from final_IG_lstm_withcorr_without_redundancy import process_dataset_with_integrated_gradients_withcorr_without_redudancy
-from final_IG_FNN_withcorr_without_redundancy import process_dataset_with_IG_FNN_with_corr_without_redundancy
 from final_PI_DT import process_dataset_with_PI_DT
 from final_PI_RF import process_dataset_with_PI_RF
 from final_PI_DT_wcorr import process_dataset_with_PI_DT_without_corr
@@ -17,10 +16,11 @@ from final_lime_agg_rf_without_corr import process_dataset_with_lime_agg_rf_with
 from final_lime_agg_xgb import process_dataset_with_lime_agg_xgb
 from final_lime_agg_xgb_without_corr import process_dataset_with_lime_agg_xgb_without_corr
 from final_WinIT_lstm import process_dataset_with_winit_lstm_with_corr
+from final_WinIT_lstm_without_corr import process_dataset_with_winit_lstm_without_corr
 from final_WinIT_lstm_vae_with_corr import process_dataset_with_winit_lstm_vae_with_corr
 from final_WinIT_lstm_vae_wcorr import process_dataset_with_winit_lstm_vae_without_corr
-from final_WinIT_GRU_with_corr import process_dataset_with_winit_gru_with_corr
 from final_WinIT_XGB_with_corr import process_dataset_with_winit_xgb_with_corr
+from final_WinIT_XGB_without_corr import process_dataset_with_winit_xgb_without_corr
 
 # Define dataset paths
 dataset_paths = [
@@ -31,38 +31,28 @@ dataset_paths = [
 ]
 
 # Define techniques to run
-# techniques = {
-#     "Integrated Gradients lstm with correlation": process_dataset_with_integrated_gradients,
-#     "Integrated Gradients fnn with correlation": process_dataset_with_IG_FNN_with_corr,
-#     "Integrated Gradients lstm with correlation without redundancy": process_dataset_with_integrated_gradients_withcorr_without_redudancy,
-#     "Integrated Gradients fnn with correlation without redundancy": process_dataset_with_IG_FNN_with_corr_without_redundancy,
-#     "Integrated Gradients lstm without correlation": process_dataset_with_IG_lstm_without_corr
-
-# }
-# techniques = {
-#     "Permutation Importance DT with correlation": process_dataset_with_PI_DT,
-#     "Permutation Importance RF with correlation": process_dataset_with_PI_RF,
-#     "Permutation Importance DT without correlation": process_dataset_with_PI_DT_without_corr,
-#     "Permutation Importance RF without correlation": process_dataset_with_PI_RF_without_corr
-
-# }
 techniques = {
+    "Integrated Gradients lstm with correlation": process_dataset_with_integrated_gradients,
+    "Integrated Gradients fnn with correlation": process_dataset_with_IG_FNN_with_corr,
+    "Integrated Gradients lstm without correlation": process_dataset_with_IG_lstm_without_corr,
+    "Integrated Gradients fnn without correlation": process_dataset_with_IG_FNN_without_corr,
+    "Permutation Importance DT with correlation": process_dataset_with_PI_DT,
+    "Permutation Importance RF with correlation": process_dataset_with_PI_RF,
+    "Permutation Importance DT without correlation": process_dataset_with_PI_DT_without_corr,
+    "Permutation Importance RF without correlation": process_dataset_with_PI_RF_without_corr,
     "LIME LSTM with correlation": process_dataset_with_lime_agg_lstm,
     "LIME RF with correlation": process_dataset_with_lime_agg_rf,
     "LIME XGB with correlation": process_dataset_with_lime_agg_xgb,
     "LIME LSTM without correlation": process_dataset_with_lime_agg_lstm_without_corr,
     "LIME RF without correlation": process_dataset_with_lime_agg_rf_without_corr,
-    "LIME XGB without correlation": process_dataset_with_lime_agg_xgb_without_corr
-
+    "LIME XGB without correlation": process_dataset_with_lime_agg_xgb_without_corr,
+    "WINIT LSTM with correlation": process_dataset_with_winit_lstm_with_corr,
+    "WINIT LSTM with correlation with vae": process_dataset_with_winit_lstm_vae_with_corr,
+    "WINIT XGB with correlation": process_dataset_with_winit_xgb_with_corr,
+    "WINIT LSTM without correlation with vae": process_dataset_with_winit_lstm_vae_without_corr,
+    "WINIT LSTM without correlation": process_dataset_with_winit_lstm_without_corr,
+    "WINIT XGB without correlation": process_dataset_with_winit_xgb_without_corr
 }
-# techniques = {
-#     "WINIT LSTM with correlation": process_dataset_with_winit_lstm_with_corr,
-#     "WINIT LSTM with correlation with vae": process_dataset_with_winit_lstm_vae_with_corr,
-#     "WINIT GRU with correlation": process_dataset_with_winit_gru_with_corr,
-#     "WINIT XGB with correlation": process_dataset_with_winit_xgb_with_corr,
-#     "WINIT LSTM without correlation with vae": process_dataset_with_winit_lstm_vae_without_corr,
-
-# }
 
 # Initialize a list to store results
 results = []
@@ -75,7 +65,7 @@ for dataset_path in dataset_paths:
     for technique_name, technique_func in techniques.items():
         start_time = time.time()
         if 'without correlation' in technique_name:
-            if 'LIME' in technique_name or 'WINIT' in technique_name:
+            if 'LIME' in technique_name or 'WINIT' in technique_name or 'fnn' in technique_name or 'XGB' in technique_name:
                 technique_results = technique_func(dataset_path, prepare_data_without_correlation_x_y_scaled)
             else:
                 technique_results = technique_func(dataset_path, prepare_data_without_correlation)
@@ -105,8 +95,7 @@ for dataset_path in dataset_paths:
 # Convert results to DataFrame
 results_df = pd.DataFrame(results)
 
-
 # Save to CSV
-output_path = "output/Comparison_Results_LIME.csv"
+output_path = f"output/Comparison_Results_{technique_name}.csv"
 results_df.to_csv(output_path, index=False)
 print(f"\n Comparison results saved to {output_path}")
