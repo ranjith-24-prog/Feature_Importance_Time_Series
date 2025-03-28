@@ -96,6 +96,6 @@ for dataset_path in dataset_paths:
 results_df = pd.DataFrame(results)
 
 # Save to CSV
-output_path = f"output/Comparison_Results_{technique_name}.csv"
+output_path = f"output/FI_Comparison_Results/Comparison_Results_{technique_name}.csv"
 results_df.to_csv(output_path, index=False)
 print(f"\n Comparison results saved to {output_path}")
