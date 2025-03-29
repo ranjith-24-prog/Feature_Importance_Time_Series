@@ -2,336 +2,257 @@ import streamlit as st
 import pandas as pd
 import os
 
-def laod_df_from_csv(output_path):
-    if os.path.exists(output_path):
-        # Load the DataFrame if the file exists
-        df = pd.read_csv(output_path)
-        st.dataframe(df)
+# -------------------
+# Session State Setup
+# -------------------
+if "analysis_started" not in st.session_state:
+    st.session_state.analysis_started = False
 
-# Streamlit sidebar navigation
-st.sidebar.title("Feature Importance Techniques")
-options = ["Integrated Gradients", "WINit", "LIME", "Permutation Importance"]
-choice = st.sidebar.radio("Select an option", options)
+if "selected_technique" not in st.session_state:
+    st.session_state.selected_technique = None
 
-# Main application
-st.title("Feature Importance Analysis")
-st.write("Select an option from the sidebar to view the respective feature importance analysis.")
+# -----------------------
+# Technique Descriptions
+# -----------------------
+technique_descriptions = {
+    "Integrated Gradients": """
+        Integrated Gradients is a gradient-based attribution method designed for neural networks. It
+        quantifies feature importance by integrating the gradients of a model’s predictions with respect
+        to input features, computed along a straight-line path from a baseline input to the actual
+        input. This approach satisfies axioms like sensitivity and implementation invariance, making
+        it theoretically grounded and suitable for complex models such as LSTMs and FNNs. IG is
+        particularly useful in capturing subtle interactions in data, especially in cases involving temporal
+        sequences
+    """,
+    "WINit": """
+        WINIT is a feature removal-based explainability method specifically designed for time-series
+        data. It computes the importance of each observation by analyzing the impact on predictions
+        over a temporal window. By aggregating effects over multiple time steps, WINIT effectively
+        captures delayed influences and long-range dependencies that are typical in industrial processes.
+        Its design makes it particularly suitable for applications where temporal causality is critical,
+        such as in CNC energy analysis
+    """,
+    "LIME": """
+        LIME is a local surrogate model approach that approximates the behavior of complex models
+        by training interpretable models (like linear regressors or decision trees) on perturbed samples
+        around a prediction instance. This enables the estimation of local feature importances in a
+        model-agnostic fashion. For tabular data, LIME generates explanations by drawing samples
+        from replacement distributions, making it flexible for use with a variety of model architectures
+        including LSTM, RF, and XGBoost 
+    """,
+    "Permutation Importance": """
+        Permutation Importance is a model-agnostic technique that evaluates feature importance by
+        measuring the change in model performance when the values of a specific feature are randomly
+        shuffled. This process breaks the association between the feature and the target variable,
+        allowing assessment of the drop in predictive accuracy due to the feature’s absence. It is
+        particularly suitable for models like decision trees and ensemble methods, and offers a robust,
+        interpretable approach, although at a higher computational cost 
+    """
+}
 
-if choice == "Permutation Importance":
-    st.header("Permutation Importance")
-    output_path = "output/FI_Dataframes/Permutation_Importance.csv"
-    tab1, tab2, tab3 = st.tabs(["Graph", "Plot", "Feature Importance"])
-    with tab1:
-        st.write("Graph")
-        st.image("output/FI_Comparison_Plots/comparison_plot_PI.png")
-        # Load your CSV (assuming it's local)
-        df = pd.read_csv("output/FI_Comparison_Results/Comparison_Results_PI.csv")
+# ----------------------------------
+# HOME PAGE with Technique Selector
+# ----------------------------------
+if not st.session_state.analysis_started:
+    # Custom CSS styling with fixed sidebar button
+    st.markdown("""
+        <style>
+            body {
+                background-color: #e6f2ff !important;
+            }
+            .stApp {
+                background-color: #e6f2ff;
+            }
+            .title {
+                font-size: 35px;
+                font-weight: 700;
+                color: #3b3b3b;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            .subtitle {
+                font-size: 18px;
+                color: #666;
+                text-align: center;
+                margin-bottom: 40px;
+            }
+            .info-box {
+                padding: 15px;
+                border-radius: 10px;
+                margin-bottom: 15px;
+                background-color: #ffffff;
+                box-shadow: 1px 1px 5px rgba(0,0,0,0.1);
+            }
+            div.stButton > button {
+                background-color: #004080;
+                color: white;
+                font-weight: bold;
+                border: none;
+                border-radius: 8px;
+                padding: 0.5em 1em;
+                transition: 0.3s;
+            }
+            div.stButton > button:hover {
+                background-color: #002d66;
+                transform: scale(1.02);
+                color: white;
+            }
+            section[data-testid="stSidebar"] {
+                background-color: #e6f2ff !important;
+            }
+            section[data-testid="stSidebar"] div.stButton > button {
+                background-color: #004080 !important;
+                color: white !important;
+                font-weight: bold !important;
+                border: none !important;
+                border-radius: 8px !important;
+                margin-top: 10px !important;
+                padding: 0.5em 1em !important;
+                transition: 0.3s !important;
+            }
+            section[data-testid="stSidebar"] div.stButton > button:hover {
+                background-color: #002d66 !important;
+                transform: scale(1.02) !important;
+                color: white !important;
+            }
+        </style>
+    """, unsafe_allow_html=True)
 
-        # Extract only the relevant columns
-        simplified_df = df[["Technique", "Top Features"]]
+    st.markdown('<div class="title">Feature Importance in Time Series For Energy Consumption in CNC Machine</div>', unsafe_allow_html=True)
+    st.image('CNC_machine.jpeg')
+    st.markdown("#### 🔍 Select a Technique to Learn More")
+    selected = st.radio("", list(technique_descriptions.keys()), index=0)
+    st.session_state.selected_technique = selected
 
-        # Display the table
-        st.title("Technique and Top Features")
-        st.dataframe(simplified_df, hide_index=True, use_container_width=False, height=600, width=6000)
+    st.markdown(f"""
+    <div class="info-box">
+        <strong>About {selected}</strong><br>
+        {technique_descriptions[selected]}
+    </div>
+    """, unsafe_allow_html=True)
 
-    with tab2:
-        st.write("Permutation Importance Plot")
-        image_folder = "output/FI_Plots/Permutation"
-        # Get all .png files
-        image_files = [f for f in os.listdir(image_folder) if f.endswith(".png")]
-        image_files.sort()  # Optional: keep it ordered
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("✨ Start Analysis", use_container_width=True):
+            st.session_state.analysis_started = True
+            st.rerun()
 
-        # Function to format image names
-        def format_image_name(filename):
-            name_part, rest = filename.split("_PI_", 1)
-            rest = rest.replace("withcorr", "with correlation")
-            rest = rest.replace("without_corr", "without correlation")
-            
-            # Remove underscore after DT or RF
-            rest = rest.replace("DT_", "DT ").replace("RF_", "RF ")
-            
-            return f"{name_part} - {rest.replace('.png', '')}"
+# ----------------------------
+# ANALYSIS VIEW after clicking
+# ----------------------------
+if st.session_state.analysis_started and st.session_state.selected_technique:
 
-        # Create a mapping from display name to file
-        display_names = [format_image_name(f) for f in image_files]
-        display_to_file = dict(zip(display_names, image_files))
+    selected = st.session_state.selected_technique
 
-        # Dropdown menu
-        selected_display_name = st.selectbox("Choose a plot to display:", display_names)
+    st.sidebar.title("Feature Importance Techniques")
+    st.sidebar.markdown(f"**Selected:** {selected}")
 
-        # Get the actual file path
-        selected_file = display_to_file[selected_display_name]
-        image_path = os.path.join(image_folder, selected_file)
+    with st.sidebar:
+        if st.button('Back'):
+            st.session_state.analysis_started = False
+            st.rerun()
 
-        # Display image
-        st.image(image_path, caption=selected_display_name, use_container_width=True)
+    def format_filename(filename, split_on, model_prefixes):
+        name_part, rest = filename.split(split_on, 1)
+        rest = rest.replace("withcorr", "with correlation")
+        rest = rest.replace("WithCorr", "with correlation")
+        rest = rest.replace("without_corr", "without correlation")
+        for prefix in model_prefixes:
+            rest = rest.replace(prefix + "_", prefix + " ")
+        return f"{name_part} - {rest.replace('.csv', '').replace('.png', '')}"
 
-    with tab3:
-        st.write("Feature Importance DataFrame")
-        dataframe_folder = "output/FI_Dataframes/Permutation"
-        # Get all .csv files
-        dataframe_files = [f for f in os.listdir(dataframe_folder) if f.endswith(".csv")]
-        dataframe_files.sort()
-        # Function to format image names
-        def format_dataframe_name(filename):
-            name_part, rest = filename.split("_PI_", 1)
-            rest = rest.replace("withcorr", "with correlation")
-            rest = rest.replace("without_corr", "without correlation")
-            
-            # Remove underscore after DT or RF
-            rest = rest.replace("DT_", "DT ").replace("RF_", "RF ")
-            
-            return f"{name_part} - {rest.replace('.csv', '')}"
+    if selected == "Permutation Importance":
+        st.header("Permutation Importance")
+        tab1, tab2, tab3 = st.tabs(["Graph", "Plot", "Feature Importance"])
+        with tab1:
+            st.image("output/FI_Comparison_Plots/comparison_plot_PI.png")
+            df = pd.read_csv("output/FI_Comparison_Results/Comparison_Results_PI.csv")
+            st.header('Technique and Top Features')
+            st.dataframe(df[["Technique", "Top Features"]], hide_index=True)
 
-        # Create a mapping from display name to file
-        display_names = [format_dataframe_name(f) for f in dataframe_files]
-        display_to_file = dict(zip(display_names, dataframe_files))
+        with tab2:
+            image_folder = "output/FI_Plots/Permutation"
+            image_files = sorted([f for f in os.listdir(image_folder) if f.endswith(".png")])
+            display_names = [format_filename(f, "_PI_", ["DT", "RF"]) for f in image_files]
+            selected_file = dict(zip(display_names, image_files))[st.selectbox("Choose a plot to display:", display_names)]
+            st.image(os.path.join(image_folder, selected_file), caption=selected_file, use_container_width=True)
 
-        # Dropdown menu
-        selected_display_name = st.selectbox("Choose a dataframe to display:", display_names)
+        with tab3:
+            dataframe_folder = "output/FI_Dataframes/Permutation"
+            dataframe_files = sorted([f for f in os.listdir(dataframe_folder) if f.endswith(".csv")])
+            display_names = [format_filename(f, "_PI_", ["DT", "RF"]) for f in dataframe_files]
+            selected_file = dict(zip(display_names, dataframe_files))[st.selectbox("Choose a dataframe to display:", display_names)]
+            df = pd.read_csv(os.path.join(dataframe_folder, selected_file))
+            st.dataframe(df, hide_index=True)
 
-        # Get the actual file path
-        selected_file = display_to_file[selected_display_name]
-        dataframe_path = os.path.join(dataframe_folder, selected_file)
-        # Display dataframe
-        df = pd.read_csv(dataframe_path)
-        st.dataframe(df)
+    elif selected == "Integrated Gradients":
+        st.header("Integrated Gradients")
+        tab1, tab2, tab3 = st.tabs(["Graph", "Plot", "Feature Importance"])
+        with tab1:
+            st.image("output/FI_Comparison_Plots/comparison_plot_IG.png")
+            df = pd.read_csv("output/FI_Comparison_Results/Comparison_Results_IG.csv")
+            st.header('Technique and Top Features')
+            st.dataframe(df[["Technique", "Top Features"]], hide_index=True)
 
-elif choice == "Integrated Gradients":
-    st.header("Integrated Gradients")
-    output_path = "output/FI_Dataframes/Integrated_Gradients.csv"
-    tab1, tab2, tab3 = st.tabs(["Graph", "Plot", "Feature Importance"])
-    with tab1:
-        st.write("Graph")
-        st.image("output/FI_Comparison_Plots/comparison_plot_IG.png")
-        # Load your CSV (assuming it's local)
-        df = pd.read_csv("output/FI_Comparison_Results/Comparison_Results_IG.csv")
+        with tab2:
+            image_folder = "output/FI_Plots/Integrated_Gradients"
+            image_files = sorted([f for f in os.listdir(image_folder) if f.endswith(".png")])
+            display_names = [format_filename(f, "_IG_", ["FNN", "lstm"]) for f in image_files]
+            selected_file = dict(zip(display_names, image_files))[st.selectbox("Choose a plot to display:", display_names)]
+            st.image(os.path.join(image_folder, selected_file), caption=selected_file, use_container_width=True)
 
-        # Extract only the relevant columns
-        simplified_df = df[["Technique", "Top Features"]]
+        with tab3:
+            dataframe_folder = "output/FI_Dataframes/Integrated_Gradients"
+            dataframe_files = sorted([f for f in os.listdir(dataframe_folder) if f.endswith(".csv")])
+            display_names = [format_filename(f, "_IG_", ["FNN", "lstm"]) for f in dataframe_files]
+            selected_file = dict(zip(display_names, dataframe_files))[st.selectbox("Choose a dataframe to display:", display_names)]
+            df = pd.read_csv(os.path.join(dataframe_folder, selected_file))
+            st.dataframe(df, hide_index=True)
 
-        # Display the table
-        st.title("Technique and Top Features")
-        st.dataframe(simplified_df, hide_index=True, use_container_width=False, height=600, width=6000)
-    with tab2:
-        st.write("Integrated Gradients Plot")
-        image_folder = "output/FI_Plots/Integrated_Gradients"
-        # Get all .png files
-        image_files = [f for f in os.listdir(image_folder) if f.endswith(".png")]
-        image_files.sort()  # Optional: keep it ordered
+    elif selected == "WINit":
+        st.header("WINit")
+        tab1, tab2, tab3 = st.tabs(["Graph", "Plot", "Feature Importance"])
+        with tab1:
+            st.image("output/FI_Comparison_Plots/comparison_plot_WinIT.png")
+            df = pd.read_csv("output/FI_Comparison_Results/Comparison_Results_WinIT.csv")
+            st.header('Technique and Top Features')
+            st.dataframe(df[["Technique", "Top Features"]], hide_index=True)
 
-        # Function to format image names
-        def format_image_name(filename):
-            name_part, rest = filename.split("_IG_", 1)
-            rest = rest.replace("withcorr", "with correlation")
-            rest = rest.replace("without_corr", "without correlation")
-            
-            # Remove underscore after DT or RF
-            rest = rest.replace("FNN_", "FNN ").replace("lstm_", "LSTM ")
-            
-            return f"{name_part} - {rest.replace('.png', '')}"
+        with tab2:
+            image_folder = "output/FI_Plots/WinIT"
+            image_files = sorted([f for f in os.listdir(image_folder) if f.endswith(".png")])
+            display_names = [format_filename(f, "_WinIT_", ["XGB", "LSTM"]) for f in image_files]
+            selected_file = dict(zip(display_names, image_files))[st.selectbox("Choose a plot to display:", display_names)]
+            st.image(os.path.join(image_folder, selected_file), caption=selected_file, use_container_width=True)
 
-        # Create a mapping from display name to file
-        display_names = [format_image_name(f) for f in image_files]
-        display_to_file = dict(zip(display_names, image_files))
+        with tab3:
+            dataframe_folder = "output/FI_Dataframes/WinIT"
+            dataframe_files = sorted([f for f in os.listdir(dataframe_folder) if f.endswith(".csv")])
+            display_names = [format_filename(f, "_WinIT_", ["XGB", "LSTM"]) for f in dataframe_files]
+            selected_file = dict(zip(display_names, dataframe_files))[st.selectbox("Choose a dataframe to display:", display_names)]
+            df = pd.read_csv(os.path.join(dataframe_folder, selected_file))
+            st.dataframe(df, hide_index=True)
 
-        # Dropdown menu
-        selected_display_name = st.selectbox("Choose a plot to display:", display_names)
+    elif selected == "LIME":
+        st.header("LIME")
+        tab1, tab2, tab3 = st.tabs(["Graph", "Plot", "Feature Importance"])
+        with tab1:
+            st.image("output/FI_Comparison_Plots/comparison_plot_LIME.png")
+            df = pd.read_csv("output/FI_Comparison_Results/Comparison_Results_LIME.csv")
+            st.header('Technique and Top Features')
+            st.dataframe(df[["Technique", "Top Features"]], hide_index=True)
 
-        # Get the actual file path
-        selected_file = display_to_file[selected_display_name]
-        image_path = os.path.join(image_folder, selected_file)
+        with tab2:
+            image_folder = "output/FI_Plots/LIME"
+            image_files = sorted([f for f in os.listdir(image_folder) if f.endswith(".png")])
+            display_names = [format_filename(f, "_lime_", ["rf", "lstm", "xgb"]) for f in image_files]
+            selected_file = dict(zip(display_names, image_files))[st.selectbox("Choose a plot to display:", display_names)]
+            st.image(os.path.join(image_folder, selected_file), caption=selected_file, use_container_width=True)
 
-        # Display image
-        st.image(image_path, caption=selected_display_name, use_container_width=True)
-
-    with tab3:
-        st.write("Feature Importance DataFrame")
-        dataframe_folder = "output/FI_Dataframes/Integrated_Gradients"
-        # Get all .csv files
-        dataframe_files = [f for f in os.listdir(dataframe_folder) if f.endswith(".csv")]
-        dataframe_files.sort()
-        # Function to format image names
-        def format_dataframe_name(filename):
-            name_part, rest = filename.split("_IG_", 1)
-            rest = rest.replace("withcorr", "with correlation")
-            rest = rest.replace("without_corr", "without correlation")
-            
-            # Remove underscore after DT or RF
-            rest = rest.replace("FNN_", "FNN ").replace("lstm_", "LSTM ")
-            
-            return f"{name_part} - {rest.replace('.csv', '')}"
-
-        # Create a mapping from display name to file
-        display_names = [format_dataframe_name(f) for f in dataframe_files]
-        display_to_file = dict(zip(display_names, dataframe_files))
-
-        # Dropdown menu
-        selected_display_name = st.selectbox("Choose a dataframe to display:", display_names)
-
-        # Get the actual file path
-        selected_file = display_to_file[selected_display_name]
-        dataframe_path = os.path.join(dataframe_folder, selected_file)
-        # Display dataframe
-        df = pd.read_csv(dataframe_path)
-        st.dataframe(df)
-
-elif choice == "WINit":
-    st.header("WINit")
-    output_path = "output/FI_Dataframes/WINit.csv"
-    tab1, tab2, tab3 = st.tabs(["Graph", "Plot", "Feature Importance"])
-    with tab1:
-        st.write("Graph")
-        st.image("output/FI_Comparison_Plots/comparison_plot_WinIT.png")
-        # Load your CSV (assuming it's local)
-        df = pd.read_csv("output/FI_Comparison_Results/Comparison_Results_WinIT.csv")
-
-        # Extract only the relevant columns
-        simplified_df = df[["Technique", "Top Features"]]
-
-        # Display the table
-        st.title("Technique and Top Features")
-        st.dataframe(simplified_df, hide_index=True, use_container_width=False, height=600, width=6000)
-    with tab2:
-        st.write("WINit Plot")
-        image_folder = "output/FI_Plots/WinIT"
-        # Get all .png files
-        image_files = [f for f in os.listdir(image_folder) if f.endswith(".png")]
-        image_files.sort()
-
-        # Function to format image names
-        def format_image_name(filename):
-            name_part, rest = filename.split("_WinIT_", 1)
-            rest = rest.replace("WithCorr", "with correlation")
-            rest = rest.replace("without_corr", "without correlation")
-            
-            
-            rest = rest.replace("XGB_", "XGB ").replace("LSTM_", "LSTM ")
-            
-            return f"{name_part} - {rest.replace('.png', '')}"
-
-        # Create a mapping from display name to file
-        display_names = [format_image_name(f) for f in image_files]
-        display_to_file = dict(zip(display_names, image_files))
-
-        # Dropdown menu
-        selected_display_name = st.selectbox("Choose a plot to display:", display_names)
-
-        # Get the actual file path
-        selected_file = display_to_file[selected_display_name]
-        image_path = os.path.join(image_folder, selected_file)
-
-        # Display image
-        st.image(image_path, caption=selected_display_name, use_container_width=True)
-
-    with tab3:
-        st.write("Feature Importance DataFrame")
-        dataframe_folder = "output/FI_Dataframes/WinIT"
-        # Get all .csv files
-        dataframe_files = [f for f in os.listdir(dataframe_folder) if f.endswith(".csv")]
-        dataframe_files.sort()
-        # Function to format image names
-        def format_dataframe_name(filename):
-            name_part, rest = filename.split("_WinIT_", 1)
-            rest = rest.replace("WithCorr", "with correlation")
-            rest = rest.replace("without_corr", "without correlation")
-            
-            
-            rest = rest.replace("XGB_", "XGB ").replace("LSTM_", "LSTM ")
-            
-            return f"{name_part} - {rest.replace('.csv', '')}"
-
-        # Create a mapping from display name to file
-        display_names = [format_dataframe_name(f) for f in dataframe_files]
-        display_to_file = dict(zip(display_names, dataframe_files))
-
-        # Dropdown menu
-        selected_display_name = st.selectbox("Choose a dataframe to display:", display_names)
-
-        # Get the actual file path
-        selected_file = display_to_file[selected_display_name]
-        dataframe_path = os.path.join(dataframe_folder, selected_file)
-        # Display dataframe
-        df = pd.read_csv(dataframe_path)
-        st.dataframe(df)
-
-
-elif choice == "LIME":
-    st.header("LIME")
-    output_path = "output/FI_Dataframes/LIME.csv"
-
-    tab1, tab2, tab3 = st.tabs(["Graph", "Plot", "Feature Importance"])
-    with tab1:
-        st.write("Graph")
-        st.image("output/FI_Comparison_Plots/comparison_plot_LIME.png")
-        # Load your CSV (assuming it's local)
-        df = pd.read_csv("output/FI_Comparison_Results/Comparison_Results_LIME.csv")
-
-        # Extract only the relevant columns
-        simplified_df = df[["Technique", "Top Features"]]
-
-        # Display the table
-        st.title("Technique and Top Features")
-        st.dataframe(simplified_df, hide_index=True, use_container_width=False, height=600, width=6000)
-    with tab2:
-        st.write("LIME Plot")
-        image_folder = "output/FI_Plots/LIME"
-        # Get all .png files
-        image_files = [f for f in os.listdir(image_folder) if f.endswith(".png")]
-        image_files.sort() 
-
-        # Function to format image names
-        def format_image_name(filename):
-            name_part, rest = filename.split("_lime_", 1)
-            rest = rest.replace("withcorr", "with correlation")
-            rest = rest.replace("without_corr", "without correlation")
-            
-            # Remove underscore after DT or RF
-            rest = rest.replace("rf_", "RF ").replace("lstm_", "LSTM ").replace("xgb_", "XGB ")
-            
-            return f"{name_part} - {rest.replace('.png', '')}"
-
-        # Create a mapping from display name to file
-        display_names = [format_image_name(f) for f in image_files]
-        display_to_file = dict(zip(display_names, image_files))
-
-        # Dropdown menu
-        selected_display_name = st.selectbox("Choose a plot to display:", display_names)
-
-        # Get the actual file path
-        selected_file = display_to_file[selected_display_name]
-        image_path = os.path.join(image_folder, selected_file)
-
-        # Display image
-        st.image(image_path, caption=selected_display_name, use_container_width=True)
-
-    with tab3:
-        st.write("Feature Importance DataFrame")
-        dataframe_folder = "output/FI_Dataframes/LIME"
-        # Get all .csv files
-        dataframe_files = [f for f in os.listdir(dataframe_folder) if f.endswith(".csv")]
-        dataframe_files.sort()
-        # Function to format image names
-        def format_dataframe_name(filename):
-            name_part, rest = filename.split("_lime_", 1)
-            rest = rest.replace("withcorr", "with correlation")
-            rest = rest.replace("without_corr", "without correlation")
-            
-            # Remove underscore after DT or RF
-            rest = rest.replace("rf_", "RF ").replace("lstm_", "LSTM ").replace("xgb_", "XGB ")
-            
-            return f"{name_part} - {rest.replace('.csv', '')}"
-
-        # Create a mapping from display name to file
-        display_names = [format_dataframe_name(f) for f in dataframe_files]
-        display_to_file = dict(zip(display_names, dataframe_files))
-
-        # Dropdown menu
-        selected_display_name = st.selectbox("Choose a dataframe to display:", display_names)
-
-        # Get the actual file path
-        selected_file = display_to_file[selected_display_name]
-        dataframe_path = os.path.join(dataframe_folder, selected_file)
-        # Display dataframe
-        df = pd.read_csv(dataframe_path)
-        st.dataframe(df)
+        with tab3:
+            dataframe_folder = "output/FI_Dataframes/LIME"
+            dataframe_files = sorted([f for f in os.listdir(dataframe_folder) if f.endswith(".csv")])
+            display_names = [format_filename(f, "_lime_", ["rf", "lstm", "xgb"]) for f in dataframe_files]
+            selected_file = dict(zip(display_names, dataframe_files))[st.selectbox("Choose a dataframe to display:", display_names)]
+            df = pd.read_csv(os.path.join(dataframe_folder, selected_file))
+            st.dataframe(df, hide_index=True)
