@@ -1,6 +1,6 @@
 import time
 import pandas as pd
-from prepare_data import prepare_data_with_correlation, prepare_data_with_correlation_without_redundancy,prepare_data_with_correlation_PI,prepare_data_with_correlation_without_redundancy_PI, prepare_data_without_correlation_x_y_scaled,prepare_data_without_correlation
+from prepare_data import prepare_data_with_correlation,prepare_data_with_correlation_PI, prepare_data_without_correlation_x_y_scaled,prepare_data_without_correlation
 from final_IG_NEW_lstm import process_dataset_with_integrated_gradients
 from final_IG_FNN_with_corr import process_dataset_with_IG_FNN_with_corr
 from final_IG_FNN_without_corr import process_dataset_with_IG_FNN_without_corr
@@ -70,9 +70,6 @@ for dataset_path in dataset_paths:
             else:
                 technique_results = technique_func(dataset_path, prepare_data_without_correlation)
             variation = "Without Correlation"
-        elif 'without redundancy' in technique_name:
-            technique_results = technique_func(dataset_path, prepare_data_with_correlation_without_redundancy)
-            variation = "With Correlation without redundancy"
         else:
             if 'Permutation' in technique_name:
                 technique_results = technique_func(dataset_path, prepare_data_with_correlation_PI)
