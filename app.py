@@ -168,7 +168,8 @@ if st.session_state.analysis_started and st.session_state.selected_technique:
             st.image("output/FI_Comparison_Plots/comparison_plot_PI.png")
             df = pd.read_csv("output/FI_Comparison_Results/Comparison_Results_PI.csv")
             st.header('Technique and Top Features')
-            st.dataframe(df[["Technique", "Top Features"]], hide_index=True)
+            df["Dataset"] = df["Dataset"].str.extract(r"(DMC2_.*?).csv")
+            st.dataframe(df[["Dataset","Technique", "Top Features"]], hide_index=True)
 
         with tab2:
             image_folder = "output/FI_Plots/Permutation"
@@ -192,7 +193,8 @@ if st.session_state.analysis_started and st.session_state.selected_technique:
             st.image("output/FI_Comparison_Plots/comparison_plot_IG.png")
             df = pd.read_csv("output/FI_Comparison_Results/Comparison_Results_IG.csv")
             st.header('Technique and Top Features')
-            st.dataframe(df[["Technique", "Top Features"]], hide_index=True)
+            df["Dataset"] = df["Dataset"].str.extract(r"(DMC2_.*?).csv")
+            st.dataframe(df[["Dataset","Technique", "Top Features"]], hide_index=True)
 
         with tab2:
             image_folder = "output/FI_Plots/Integrated_Gradients"
@@ -216,7 +218,8 @@ if st.session_state.analysis_started and st.session_state.selected_technique:
             st.image("output/FI_Comparison_Plots/comparison_plot_WinIT.png")
             df = pd.read_csv("output/FI_Comparison_Results/Comparison_Results_WinIT.csv")
             st.header('Technique and Top Features')
-            st.dataframe(df[["Technique", "Top Features"]], hide_index=True)
+            df["Dataset"] = df["Dataset"].str.extract(r"(DMC2_.*?).csv")
+            st.dataframe(df[["Dataset","Technique", "Top Features"]], hide_index=True)
 
         with tab2:
             image_folder = "output/FI_Plots/WinIT"
@@ -240,7 +243,8 @@ if st.session_state.analysis_started and st.session_state.selected_technique:
             st.image("output/FI_Comparison_Plots/comparison_plot_LIME.png")
             df = pd.read_csv("output/FI_Comparison_Results/Comparison_Results_LIME.csv")
             st.header('Technique and Top Features')
-            st.dataframe(df[["Technique", "Top Features"]], hide_index=True)
+            df["Dataset"] = df["Dataset"].str.extract(r"(DMC2_.*?).csv")
+            st.dataframe(df[["Dataset","Technique", "Top Features"]], hide_index=True)
 
         with tab2:
             image_folder = "output/FI_Plots/LIME"
