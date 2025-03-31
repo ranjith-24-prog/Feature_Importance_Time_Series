@@ -7,10 +7,11 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from lime.lime_tabular import LimeTabularExplainer
 import matplotlib.pyplot as plt
 from collections import defaultdict
-import models_final
+from prepare_data import prepare_data_with_correlation
+import model
 import os
 
-def process_dataset_with_lime_agg_lstm_without_corr(path, prepare_data_func):
+def process_dataset_with_lime_agg_lstm(path, prepare_data_func):
     def predict_fn(input_data):
         input_tensor = torch.tensor(input_data, dtype=torch.float32).unsqueeze(1)
         return model(input_tensor).detach().numpy()
@@ -18,7 +19,7 @@ def process_dataset_with_lime_agg_lstm_without_corr(path, prepare_data_func):
     X, y, feature_names = prepare_data_func(path)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    model = models_final.LSTMModel(input_size=X_train.shape[1], hidden_size=128, output_size=y_train.shape[1], num_layers=2)
+    model = model.LSTMModel(input_size=X_train.shape[1], hidden_size=128, output_size=y_train.shape[1], num_layers=2)
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)
 
@@ -31,7 +32,7 @@ def process_dataset_with_lime_agg_lstm_without_corr(path, prepare_data_func):
         loss.backward()
         optimizer.step()
         print(f"Epoch [{epoch+1}/50], Loss: {loss.item():.4f}")
-
+    
     # Compute Test Loss
     model.eval()
     with torch.no_grad():
@@ -58,12 +59,12 @@ def process_dataset_with_lime_agg_lstm_without_corr(path, prepare_data_func):
     dataset_name = os.path.basename(path).split(".")[0]
     importance_df = pd.DataFrame(list(aggregated_importance.items()), columns=['Feature', 'Importance'])
     top_features = importance_df.head(10)["Feature"].tolist() #Added for comparison
-    csv_output_path = f"output/FI_Dataframes/LIME/{dataset_name}_lime_lstm_without_corr.csv"
+    csv_output_path = f"output/FI_Dataframes/LIME/{dataset_name}_lime_lstm_withcorr.csv"
     os.makedirs(os.path.dirname(csv_output_path), exist_ok=True)
     importance_df.to_csv(csv_output_path, index=False)
     print(f"Feature importance saved successfully to: {csv_output_path}")
 
-    plot_path = f"output/FI_Plots/LIME/{dataset_name}_lime_lstm_without_corr.png"
+    plot_path = f"output/FI_Plots/LIME/{dataset_name}_lime_lstm_withcorr.png"
     print(f"Saving plot to: {plot_path}")
     plt.figure(figsize=(12, 6))
     plt.barh(list(aggregated_importance.keys()), list(aggregated_importance.values()), color='skyblue')

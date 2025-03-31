@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from captum.attr import IntegratedGradients
 import matplotlib.pyplot as plt
-import models_final
+import model
 from prepare_data import get_all_features
 import os
 
@@ -21,7 +21,7 @@ def compute_ig_in_batches(ig, inputs, baselines, batch_size, target_idx):
     return torch.cat(all_attributions)
 
 
-def process_dataset_with_IG_FNN_with_corr(path, prepare_data_func):
+def process_dataset_with_IG_FNN_without_corr(path, prepare_data_func):
     X, y, retained_features = prepare_data_func(path)
     all_features = get_all_features()
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -35,7 +35,7 @@ def process_dataset_with_IG_FNN_with_corr(path, prepare_data_func):
     hidden_size = 128  # Number of neurons in each hidden layer
     output_size = y_train.size(-1)  # Number of output variables
     num_layers = 3  # Number of hidden layers
-    model = models_final.FNNModel(input_size, hidden_size, output_size, num_layers)
+    model = model.FNNModel(input_size, hidden_size, output_size, num_layers)
 
     # Define loss function and optimizer
     criterion = nn.MSELoss()
@@ -83,13 +83,13 @@ def process_dataset_with_IG_FNN_with_corr(path, prepare_data_func):
     }).sort_values(by="Importance", ascending=False)
     top_features = importance_df.head(10)["Feature"].tolist() #Added for comparison
 
-    csv_output_path = f"output/FI_Dataframes/Integrated_Gradients/{dataset_name}_IG_FNN_withcorr.csv"
+    csv_output_path = f"output/FI_Dataframes/Integrated_Gradients/{dataset_name}_IG_FNN_without_corr.csv"
     os.makedirs(os.path.dirname(csv_output_path), exist_ok=True)
     importance_df.to_csv(csv_output_path, index=False)
     
 
     # Plot feature importance
-    plot_path = f"output/FI_Plots/Integrated_Gradients/{dataset_name}_IG_FNN_withcorr.png"
+    plot_path = f"output/FI_Plots/Integrated_Gradients/{dataset_name}_IG_FNN_without_corr.png"
     os.makedirs(os.path.dirname(plot_path), exist_ok=True)
     plt.figure(figsize=(12, max(6, len(importance_df) * 0.5)))
     plt.barh(importance_df["Feature"], importance_df["Importance"], color='skyblue')

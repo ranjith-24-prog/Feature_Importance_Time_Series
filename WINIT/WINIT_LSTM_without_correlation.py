@@ -6,7 +6,7 @@ import torch.nn as nn
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
-import models_final
+import model
 
 
 # Train the baseline model
@@ -67,7 +67,7 @@ def process_dataset_with_winit_lstm_without_corr(path, prepare_data_func):
     hidden_size = 128
     output_size = y_train.size(-1)
     num_layers = 2
-    model = models_final.LSTMModel(input_size, hidden_size, output_size, num_layers)
+    model = model.LSTMModel(input_size, hidden_size, output_size, num_layers)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     criterion = nn.MSELoss()
 

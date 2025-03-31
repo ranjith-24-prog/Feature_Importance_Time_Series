@@ -2,18 +2,14 @@ import streamlit as st
 import pandas as pd
 import os
 
-# -------------------
-# Session State Setup
-# -------------------
+
 if "analysis_started" not in st.session_state:
     st.session_state.analysis_started = False
 
 if "selected_technique" not in st.session_state:
     st.session_state.selected_technique = None
 
-# -----------------------
-# Technique Descriptions
-# -----------------------
+
 technique_descriptions = {
     "Integrated Gradients": """
         Integrated Gradients is a gradient-based attribution method designed for neural networks. It
@@ -50,11 +46,8 @@ technique_descriptions = {
     """
 }
 
-# ----------------------------------
-# HOME PAGE with Technique Selector
-# ----------------------------------
+
 if not st.session_state.analysis_started:
-    # Custom CSS styling with fixed sidebar button
     st.markdown("""
         <style>
             body {
@@ -137,9 +130,7 @@ if not st.session_state.analysis_started:
             st.session_state.analysis_started = True
             st.rerun()
 
-# ----------------------------
-# ANALYSIS VIEW after clicking
-# ----------------------------
+
 if st.session_state.analysis_started and st.session_state.selected_technique:
 
     selected = st.session_state.selected_technique
