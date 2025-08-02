@@ -48,69 +48,7 @@ technique_descriptions = {
 
 
 if not st.session_state.analysis_started:
-    st.markdown("""
-        <style>
-            body {
-                background-color: #e6f2ff !important;
-            }
-            .stApp {
-                background-color: #e6f2ff;
-            }
-            .title {
-                font-size: 35px;
-                font-weight: 700;
-                color: #3b3b3b;
-                text-align: center;
-                margin-bottom: 20px;
-            }
-            .subtitle {
-                font-size: 18px;
-                color: #666;
-                text-align: center;
-                margin-bottom: 40px;
-            }
-            .info-box {
-                padding: 15px;
-                border-radius: 10px;
-                margin-bottom: 15px;
-                background-color: #ffffff;
-                box-shadow: 1px 1px 5px rgba(0,0,0,0.1);
-            }
-            div.stButton > button {
-                background-color: #004080;
-                color: white;
-                font-weight: bold;
-                border: none;
-                border-radius: 8px;
-                padding: 0.5em 1em;
-                transition: 0.3s;
-            }
-            div.stButton > button:hover {
-                background-color: #002d66;
-                transform: scale(1.02);
-                color: white;
-            }
-            section[data-testid="stSidebar"] {
-                background-color: #e6f2ff !important;
-            }
-            section[data-testid="stSidebar"] div.stButton > button {
-                background-color: #004080 !important;
-                color: white !important;
-                font-weight: bold !important;
-                border: none !important;
-                border-radius: 8px !important;
-                margin-top: 10px !important;
-                padding: 0.5em 1em !important;
-                transition: 0.3s !important;
-            }
-            section[data-testid="stSidebar"] div.stButton > button:hover {
-                background-color: #002d66 !important;
-                transform: scale(1.02) !important;
-                color: white !important;
-            }
-        </style>
-    """, unsafe_allow_html=True)
-
+    
     st.markdown('<div class="title">Feature Importance in Time Series For Energy Consumption in CNC Machine</div>', unsafe_allow_html=True)
     st.image('CNC_machine.jpeg')
     st.markdown("#### 🔍 Select a Technique to Learn More")
