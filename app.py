@@ -48,7 +48,33 @@ technique_descriptions = {
 
 
 if not st.session_state.analysis_started:
-    
+
+    current_theme = st.get_option("theme.base")  # returns 'light' or 'dark'
+
+    if current_theme == "dark":
+        title_color = "#FFFFFF"      # white for dark mode
+        subtitle_color = "#CCCCCC"   # lighter gray for dark mode subtitle
+    else:
+        title_color = "#000000"      # black for light mode
+        subtitle_color = "#666666"   # original gray for light mode subtitle
+
+    st.markdown(f"""
+    <style>
+        .title {{
+            font-size: 35px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+        }}
+        .subtitle {{
+            font-size: 18px;
+            color: {subtitle_color} !important;
+            text-align: center;
+            margin-bottom: 40px;
+        }}
+    </style>
+""", unsafe_allow_html=True)
+
     st.markdown('<div class="title">Feature Importance in Time Series For Energy Consumption in CNC Machine</div>', unsafe_allow_html=True)
     st.image('CNC_machine.jpeg')
     st.markdown("#### 🔍 Select a Technique to Learn More")
