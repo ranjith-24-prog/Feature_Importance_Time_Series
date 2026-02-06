@@ -44,9 +44,9 @@ This project focuses on:
 - Feature-importance rankings (Top-N features per scenario).
 - Comparison plots/tables across techniques, models, and correlation settings.
 - Stored experiment metrics (e.g., test loss, execution time) produced during offline runs.
-
+<!--
 ![Sample comparison output](assets/fi-comparison.png)
-
+-->
 ## Tech stack
 - Python (data preprocessing, experiment orchestration, evaluation)
 - Streamlit (interactive dashboard for exploring precomputed results)
